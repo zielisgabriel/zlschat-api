@@ -22,14 +22,15 @@ public class MessageService {
     private final ChatRoomRepository chatRoomRepository;
 
     public void send(MessageDTO messageDTO) {
-        List<ChatRoom> chatRooms = this.chatRoomRepository.findByUsersInChatContains(messageDTO.getSenderUsername());
-        for (ChatRoom chatRoom : chatRooms) {
-            if (!chatRoom.getUsersInChat().contains(messageDTO.getReceiverUsername().toString())) {
-                throw new ChatNotFoundException("Chat não encontrado");
-            }
+        ChatRoom chatRoom = this.chatRoomRepository.findById(messageDTO.getChatRoomId())
+            .orElseThrow(() -> new ChatNotFoundException("Chat nao encontrado"));
+        if (chatRoom.getUsersInChat().contains(messageDTO.getSenderUsername()) &&
+            chatRoom.getUsersInChat().contains(messageDTO.getReceiverUsername())) {
+            Message message = messageDTO.toEntity();
+            this.messageRepository.save(message);
+        } else {
+            throw new ChatNotFoundException("Chat nao encontrado");
         }
-        Message message = messageDTO.toEntity();
-        this.messageRepository.save(message);
     }
 
     public List<Message> listMessages(UUID chatRoomId) {
