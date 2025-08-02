@@ -52,11 +52,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             .issuer("zlschat")
             .claim("username", user.getUsername())
             .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+            .expiration(new Date(this.daysToMilliseconds(7)))
             .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), Jwts.SIG.HS256)
             .compact();
         Cookie jwtCookie = new Cookie("sessiontoken", jwtToken);
-        jwtCookie.setMaxAge(60 * 60 * 24);
+        jwtCookie.setMaxAge(this.daysToSeconds(7));
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
@@ -76,5 +76,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(errorInfo));
+    }
+
+    private long daysToMilliseconds(int days) {
+        return System.currentTimeMillis() + 1000 * 60 * 60 * 24 * days;
+    }
+
+    private int daysToSeconds(int days) {
+        return 60 * 60 * 24 * days;
     }
 }
