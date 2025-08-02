@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.gabriel.websocket.dtos.MessageDTO;
+import br.com.gabriel.websocket.dtos.TypingDTO;
 import br.com.gabriel.websocket.models.Message;
 import br.com.gabriel.websocket.services.MessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MessageController {
@@ -27,6 +30,12 @@ public class MessageController {
     public void send(@Payload MessageDTO messageDTO) {
         this.messageService.send(messageDTO);
         this.simpMessagingTemplate.convertAndSendToUser(messageDTO.getReceiverUsername(), "/queue/messages", messageDTO);
+    }
+
+    @MessageMapping("/typing")
+    public void typing(@Payload TypingDTO typingDTO) {
+        log.info("typing recebido: {}", typingDTO);
+        this.simpMessagingTemplate.convertAndSend("/topic/typing/" + typingDTO.getChatRoomId(), typingDTO);
     }
 
     @GetMapping("/api/messages/{chatRoomId}")
