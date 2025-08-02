@@ -54,7 +54,8 @@ public class SecurityConfig {
                         response.setStatus(HttpServletResponse.SC_OK);
                     }
                 }))
-            .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .maximumSessions(1))
             .addFilter(authenticationFilter)
             .addFilterBefore(this.authorizationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
