@@ -1,0 +1,7 @@
+.dockerignore
+.vscode
+target
+.gitattributes
+.gitignore
+.docker-compose.yaml
+Dockerfile
