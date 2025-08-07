@@ -1,4 +1,4 @@
-name: ZlsChat CI
+name: ZlsChat CI | Test
 
 on:
     push:
