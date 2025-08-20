@@ -1,0 +1,38 @@
+name: ZlsChat API CI | AWS ECR
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        environment: AWS_CREDENTIALS
+        permissions:
+            id-token: write
+            contents: read
+
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v4
+            with:
+                role-to-assume: "${{ secrets.ECR_ARN_ROLE }}"
+                aws-region: us-east-1
+
+          - name: Login to Amazon ECR
+            id: login-ecr
+            uses: aws-actions/amazon-ecr-login@v1
+
+          - name: Build, tag, and push image to Amazon ECR
+            id: build-image
+            env:
+                ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                ECR_REPOSITORY: zlschat_ecr_repository
+                IMAGE_TAG: ${{ github.sha }}
+            run: |
+                docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Dockerfile .
+                docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
