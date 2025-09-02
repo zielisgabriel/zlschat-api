@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import br.com.gabriel.zlschat.dtos.MessageDTO;
+import br.com.gabriel.zlschat.enums.MessageStatus;
 import br.com.gabriel.zlschat.exceptions.ChatNotFoundException;
 import br.com.gabriel.zlschat.models.ChatRoom;
 import br.com.gabriel.zlschat.models.Message;
@@ -21,20 +22,48 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    public void send(MessageDTO messageDTO) {
+    public List<Message> listMessages(UUID chatRoomId) {
+        return this.messageRepository.findByChatRoomId(chatRoomId);
+    }
+
+    public Message saveMessage(MessageDTO messageDTO) {
+        if (messageDTO.getStatus() != MessageStatus.SENDING) {
+            throw new RuntimeException("Houve uma modificação no código fonte do front-end!");
+        }
+
+        boolean isExistsSameMessageInChat = this.messageRepository.existsByTempIdAndChatRoomId(
+            messageDTO.getTempId(), messageDTO.getChatRoomId());
+        if (isExistsSameMessageInChat) {
+            throw new RuntimeException("Mensagem já existe no chat");
+        }
+
         ChatRoom chatRoom = this.chatRoomRepository.findById(messageDTO.getChatRoomId())
             .orElseThrow(() -> new ChatNotFoundException("Chat não encontrado"));
+
         if (chatRoom.getUsersInChat().contains(messageDTO.getSenderUsername()) &&
             chatRoom.getUsersInChat().contains(messageDTO.getReceiverUsername())) {
-            Message message = messageDTO.toEntity();
-            this.messageRepository.save(message);
+            Message msg = messageDTO.toEntity();
+            msg.setStatus(MessageStatus.SENT);
+            this.messageRepository.save(msg);
+            return msg;
         } else {
             throw new ChatNotFoundException("Chat não encontrado");
         }
     }
 
-    public List<Message> listMessages(UUID chatRoomId) {
-        List<Message> messages = this.messageRepository.findByChatRoomId(chatRoomId);
-        return messages;
+    public Message markMessageAsRead(UUID messageId, String senderUsername) {
+        boolean isMessageValid = this.messageRepository.existsByIdAndSenderUsername(messageId, senderUsername);
+        if (!isMessageValid) {
+            throw new RuntimeException("Mensagem não encontrada ou não pertence ao usuário");
+        }
+        Message message = this.updateMessageStatus(messageId, MessageStatus.READ);
+        return message;
+    }
+
+    private Message updateMessageStatus(UUID messageId, MessageStatus status) {
+        Message message = this.messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+        message.setStatus(status);
+        return this.messageRepository.save(message);
     }
 }
