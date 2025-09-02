@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb}
+  rabbitmq:
+    addresses: ${RABBITMQ_URI}
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{dd/MM/yyyy HH:mm:ss.SSS} %blue(%-5level) %yellow([%thread]) %green(%logger{15}) - %white(%msg) %n"
+
+jwt:
+  secret: ${JWT_SECRET}
+
+cors:
+  origin: "${CORS_ORIGIN}"
