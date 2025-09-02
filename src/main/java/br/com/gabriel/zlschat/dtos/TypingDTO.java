@@ -8,5 +8,5 @@ import lombok.Data;
 public class TypingDTO {
     private boolean typing;
     private UUID chatRoomId;
-    private String username;
+    private String typingUsername;
 }
