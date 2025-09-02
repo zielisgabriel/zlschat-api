@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://admin:password@localhost:27017/zlschat?authSource=admin}
+  rabbitmq:
+    addresses: ${RABBITMQ_URI:amqp://user:password@localhost:5672}
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{dd/MM/yyyy HH:mm:ss.SSS} %blue(%-5level) %yellow([%thread]) %green(%logger{15}) - %white(%msg) %n"
+
+jwt:
+  secret: ${JWT_SECRET:1311f8fc80a7ea28d78dd7723f09c44c1754cd35160ca8e7133ae3d7f636a19a}
+
+cors:
+  origin: "${CORS_ORIGIN:http://localhost:3000}"
