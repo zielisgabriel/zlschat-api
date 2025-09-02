@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import br.com.gabriel.zlschat.dtos.MessageDTO;
+import br.com.gabriel.zlschat.enums.MessageStatus;
 import br.com.gabriel.zlschat.models.ChatRoom;
 import br.com.gabriel.zlschat.models.Message;
 import br.com.gabriel.zlschat.repositories.ChatRoomRepository;
@@ -44,6 +45,8 @@ public class MessageServiceTest {
         messageDTO.setSenderUsername("user1");
         messageDTO.setReceiverUsername("user2");
         messageDTO.setContent("Hello");
+        messageDTO.setStatus(MessageStatus.SENDING);
+        messageDTO.setTempId(UUID.randomUUID());
 
         when(this.chatRoomRepository.findById(messageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
         
