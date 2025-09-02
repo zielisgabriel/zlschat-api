@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.gabriel.zlschat.models.ChatRoom;
@@ -21,14 +21,16 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<ChatRoom>> listChatRooms() {
+    @ResponseStatus(HttpStatus.OK)
+    public List<ChatRoom> listChatRooms() {
         List<ChatRoom> chatRooms = this.chatRoomService.listChatRooms();
-        return new ResponseEntity<List<ChatRoom>>(chatRooms, HttpStatus.OK);
+        return chatRooms;
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/find/{chatRoomId}")
-    public ResponseEntity<ChatRoom> findChatRoomById(@PathVariable UUID chatRoomId) {
+    public ChatRoom findChatRoomById(@PathVariable UUID chatRoomId) {
         ChatRoom chatRoom = this.chatRoomService.findChatRoomById(chatRoomId);
-        return new ResponseEntity<ChatRoom>(chatRoom, HttpStatus.OK);
+        return chatRoom;
     }
 }
