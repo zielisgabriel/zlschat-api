@@ -1,12 +1,16 @@
 package br.com.gabriel.zlschat.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import br.com.gabriel.zlschat.config.AuthenticationUserProvider;
+import br.com.gabriel.zlschat.dtos.FriendDTO;
 import br.com.gabriel.zlschat.dtos.UserDTO;
+import br.com.gabriel.zlschat.dtos.UserStatusDTO;
 import br.com.gabriel.zlschat.exceptions.UserAlreadyExistsException;
 import br.com.gabriel.zlschat.exceptions.UserCannotBeAddedException;
 import br.com.gabriel.zlschat.exceptions.UserNotFoundException;
@@ -22,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationUserProvider authenticationUserProvider;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     public void register(UserDTO userDTO) {
         boolean isEmailExists = this.userRepository.existsByEmail(userDTO.getEmail());
@@ -49,15 +54,18 @@ public class UserService {
         return user;
     }
 
-    public void requestFriendship(String usernameReceiver) {    
+    public void requestFriendship(String receiverUsername) {    
         UserEntity authenticatedUser = this.me();
-        if (usernameReceiver == authenticatedUser.getUsername() || authenticatedUser.getFriends().contains(usernameReceiver)) {
+        if (receiverUsername == authenticatedUser.getUsername() || authenticatedUser.getFriends().contains(receiverUsername)) {
             throw new RuntimeException("Usuário não pode ser adicionado");
         }
-        UserEntity userReceiver = this.userRepository.findByUsername(usernameReceiver)
+        UserEntity receiverUser = this.userRepository.findByUsername(receiverUsername)
             .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        userReceiver.getFriendRequests().add(authenticatedUser.getUsername());
-        this.userRepository.save(userReceiver);
+        if (authenticatedUser.getFriendRequests().contains(receiverUsername)) {
+            this.acceptFriendship(receiverUsername);
+        }
+        receiverUser.getFriendRequests().add(authenticatedUser.getUsername());
+        this.userRepository.save(receiverUser);
     }
 
     public void acceptFriendship(String receiverUsername) {
@@ -88,5 +96,30 @@ public class UserService {
             .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         authenticatedUser.getFriendRequests().remove(userThatSendRequestFriend.getUsername());
         this.userRepository.save(authenticatedUser);
+    }
+
+    public List<FriendDTO> getMyFriends(String username) {
+        UserEntity user = this.userRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        return user.getFriends().stream().map(friendUsername -> {
+            UserEntity friendEntity = this.userRepository.findByUsername(friendUsername)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+            FriendDTO friendDTO = new FriendDTO();
+            friendDTO.setUsername(friendEntity.getUsername());
+            friendDTO.setStatus(friendEntity.getStatus());
+            return friendDTO;
+        }).collect(Collectors.toList());
+    }
+
+    public void updateStatus(UserStatusDTO userStatusDTO) {
+        List<FriendDTO> friendUsernames = this.getMyFriends(userStatusDTO.getUsername());
+        for (FriendDTO friend : friendUsernames) {
+            this.simpMessagingTemplate.convertAndSendToUser(friend.getUsername(), "/queue/user.status", userStatusDTO);
+        }
+        UserEntity userEntity = this.userRepository.findByUsername(userStatusDTO.getUsername())
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        userEntity.setStatus(userStatusDTO.getStatus());
+        this.userRepository.save(userEntity);
+        this.simpMessagingTemplate.convertAndSendToUser(userStatusDTO.getUsername(), "/queue/user.status", userStatusDTO);
     }
 }
