@@ -47,7 +47,7 @@ public class MessageServiceTest {
 
         when(this.chatRoomRepository.findById(messageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
         
-        this.messageService.send(messageDTO);
+        this.messageService.saveMessage(messageDTO);
         
         ArgumentCaptor<Message> argumentCaptorMessage = ArgumentCaptor.forClass(Message.class);
         verify(this.messageRepository).save(argumentCaptorMessage.capture());
