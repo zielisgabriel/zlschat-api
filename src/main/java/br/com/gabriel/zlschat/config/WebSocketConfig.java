@@ -19,9 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/queue"); // mensagens saem por aqui
-        registry.setApplicationDestinationPrefixes("/app"); // mensagens entram por aqui
-        registry.setUserDestinationPrefix("/user"); // 
+        registry.enableSimpleBroker("/topic", "/queue");
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
