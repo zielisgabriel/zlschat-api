@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+
 import br.com.gabriel.zlschat.config.AuthenticationUserProvider;
 import br.com.gabriel.zlschat.dtos.UserDTO;
 import br.com.gabriel.zlschat.exceptions.UserAlreadyExistsException;
