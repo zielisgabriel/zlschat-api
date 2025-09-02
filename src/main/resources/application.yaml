@@ -5,20 +5,7 @@ logging:
     console: "%d{dd/MM/yyyy HH:mm:ss.SSS} %blue(%-5level) %yellow([%thread]) %green(%logger{15}) - %white(%msg) %n"
 
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   main:
     allow-circular-references: true
-  data:
-    mongodb:
-      username: ${MONGODB_USERNAME:admin}
-      password: ${MONGODB_PASSWORD:password}
-      host: ${MONGODB_HOST:localhost}
-      port: ${MONGODB_PORT:27017}
-      database: ${MONGODB_DATABASE:websocket}
-      authentication-database: ${MONGODB_AUTHENTICATION_DATABASE:admin}
-      auto-index-creation: ${MONGODB_AUTO_INDEX_CREATION:true}
-
-jwt:
-  secret: ${JWT_SECRET:1311f8fc80a7ea28d78dd7723f09c44c1754cd35160ca8e7133ae3d7f636a19a}
-
-cors:
-  origin: ${CORS_ORIGIN:http://localhost:3000}
