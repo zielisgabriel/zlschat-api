@@ -3,11 +3,13 @@ package br.com.gabriel.zlschat.models;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import br.com.gabriel.zlschat.enums.ChatRoomType;
 import lombok.Data;
 
 @Data
+@Document(collection = "chatrooms")
 public class ChatRoom {
     private UUID id;
     private ChatRoomType chatRoomType;

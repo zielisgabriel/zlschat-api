@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -14,13 +16,16 @@ import br.com.gabriel.zlschat.enums.UserStatus;
 import lombok.Data;
 
 @Data
+@Document(collection = "users")
 public class UserEntity implements UserDetails {
     @JsonIgnore
     private UUID id;
 
+    @Indexed(unique = true)
     private String username;
 
     @JsonIgnore
+    @Indexed(unique = true)
     private String email;
     private String password;
     private List<String> friends = new ArrayList<String>();
