@@ -46,7 +46,7 @@ jobs:
               docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
               docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          - name: Put secrets to AWS Secrets Manager (create or update)
+          - name: Put secrets to AWS Secrets Manager
             env:
               MONGODB_USER: ${{ secrets.MONGODB_ROOT_USERNAME }}
               MONGODB_PASS: ${{ secrets.MONGODB_ROOT_PASSWORD }}
@@ -60,13 +60,13 @@ jobs:
               RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
               RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
               RABBITMQ_URI="amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@zlschat-rabbitmq.zlschat.local:5672/zlschat"
-              REDIS_URI="redis://${{secrets.REDIS_USER}}:${{secrets.REDIS_PASS}}zlschat-redis.zlschat.local@:6379/0"
+              REDIS_URI="redis://${{secrets.REDIS_USER}}:${{secrets.REDIS_PASS}}@zlschat-redis.zlschat.local:6379/0"
               JWT_SECRET=${JWT_SECRET}
 
-              aws secretsmanager create-secret --name mongodb_uri --description "Mongo URI" --secret-string "${MONGODB_URI}" || aws secretsmanager put-secret-value --secret-id mongodb_uri --secret-string "${MONGODB_URI}"
-              aws secretsmanager create-secret --name rabbitmq_uri --description "RabbitMQ URI" --secret-string "${RABBITMQ_URI}" || aws secretsmanager put-secret-value --secret-id rabbitmq_uri --secret-string "${RABBITMQ_URI}"
-              aws secretsmanager create-secret --name redis_uri --description "Redis URI" --secret-string "${REDIS_URI}" || aws secretsmanager put-secret-value --secret-id redis_uri --secret-string "${REDIS_URI}"
-              aws secretsmanager create-secret --name jwt_secret --description "JWT Secret" --secret-string "${JWT_SECRET}" || aws secretsmanager put-secret-value --secret-id jwt_secret --secret-string "${JWT_SECRET}"
+              aws secretsmanager put-secret-value --secret-id mongodb_uri --secret-string "${MONGODB_URI}"
+              aws secretsmanager put-secret-value --secret-id rabbitmq_uri --secret-string "${RABBITMQ_URI}"
+              aws secretsmanager put-secret-value --secret-id redis_uri --secret-string "${REDIS_URI}"
+              aws secretsmanager put-secret-value --secret-id jwt_secret --secret-string "${JWT_SECRET}"
 
           - name: Force ECS to deploy new image
             run: |
