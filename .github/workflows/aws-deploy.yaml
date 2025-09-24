@@ -64,28 +64,28 @@ jobs:
               JWT_SECRET=${JWT_SECRET}
 
               aws secretsmanager put-secret-value \
-                --secret-id mongodb_root_username \
+                --secret-id zlschat/mongodb_root_username \
                 --secret-string "${MONGODB_ROOT_USERNAME}"
               aws secretsmanager put-secret-value \
-                --secret-id mongodb_root_password \
+                --secret-id zlschat/mongodb_root_password \
                 --secret-string "${MONGODB_ROOT_PASSWORD}"
               aws secretsmanager put-secret-value \
-                --secret-id mongodb_uri \
+                --secret-id zlschat/mongodb_uri \
                 --secret-string "${MONGODB_URI}"
               aws secretsmanager put-secret-value \
-                --secret-id rabbitmq_default_user \
+                --secret-id zlschat/rabbitmq_default_user \
                 --secret-string "${RABBITMQ_DEFAULT_USER}"
               aws secretsmanager put-secret-value \
-                --secret-id rabbitmq_default_pass \
+                --secret-id zlschat/rabbitmq_default_pass \
                 --secret-string "${RABBITMQ_DEFAULT_PASS}"
               aws secretsmanager put-secret-value \
-                --secret-id rabbitmq_uri \
+                --secret-id zlschat/rabbitmq_uri \
                 --secret-string "${RABBITMQ_URI}"
               aws secretsmanager put-secret-value \
-                --secret-id redis_uri \
+                --secret-id zlschat/redis_uri \
                 --secret-string "${REDIS_URI}"
               aws secretsmanager put-secret-value \
-                --secret-id jwt_secret \
+                --secret-id zlschat/jwt_secret \
                 --secret-string "${JWT_SECRET}"
 
 
