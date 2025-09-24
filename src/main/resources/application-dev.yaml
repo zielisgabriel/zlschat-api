@@ -5,6 +5,9 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://admin:password@localhost:27017/zlschat?authSource=admin}
+      auto-index-creation: true
+  redis:
+    uri: ${REDIS_URI:redis://admin:password@localhost:6379/0}
   rabbitmq:
     addresses: ${RABBITMQ_URI:amqp://user:password@localhost:5672}
 

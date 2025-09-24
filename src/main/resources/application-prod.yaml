@@ -4,7 +4,8 @@ server:
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb}
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
   rabbitmq:
     addresses: ${RABBITMQ_URI}
 
@@ -15,7 +16,7 @@ logging:
     console: "%d{dd/MM/yyyy HH:mm:ss.SSS} %blue(%-5level) %yellow([%thread]) %green(%logger{15}) - %white(%msg) %n"
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: "${JWT_SECRET}"
 
 cors:
   origin: "${CORS_ORIGIN}"

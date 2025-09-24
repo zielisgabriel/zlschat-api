@@ -2,7 +2,8 @@ package br.com.gabriel.zlschat.enums;
 
 public enum UserStatus {
     ONLINE("online"),
-    OFFLINE("offline");
+    OFFLINE("offline"),
+    AWAY("away");
 
     private String status;
 

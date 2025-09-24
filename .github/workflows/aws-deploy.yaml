@@ -1,0 +1,63 @@
+name: ZlsChat CI | AWS Deploy
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    deploy:
+        environment:
+          name: API_ENV
+        runs-on: ubuntu-latest
+        steps:
+          - name: "Checkout code"
+            uses: actions/checkout@v4
+
+          - name: Configure AWS credentials
+            uses: aws-actions/configure-aws-credentials@v4
+            with:
+                role-to-assume: ${{secrets.OIDC_ARN}}
+                aws-region: us-east-1
+
+          - name: Login to Amazon ECR
+            id: login-ecr
+            uses: aws-actions/amazon-ecr-login@v2
+
+          - name: Build, tag, and push docker image to Amazon ECR
+            env:
+                IMAGE_TAG: ${{ github.sha }}
+            run: |
+                docker build -t zlschat-api:$IMAGE_TAG .
+                docker build -t zlschat-api:latest .
+                docker build -t zlschat-redis:latest ./redis
+                docker push zlschat-api:$IMAGE_TAG
+                docker push zlschat-api:latest
+                docker push zlschat-redis:latest
+          - name: Put secrets to AWS Secrets Manager (create or update)
+            env:
+              MONGODB_USER: ${{ secrets.MONGODB_ROOT_USERNAME }}
+              MONGODB_PASS: ${{ secrets.MONGODB_ROOT_PASSWORD }}
+              RABBITMQ_USER: ${{ secrets.RABBITMQ_DEFAULT_USER }}
+              RABBITMQ_PASS: ${{ secrets.RABBITMQ_DEFAULT_PASS }}
+              JWT_SECRET: ${{ secrets.JWT_SECRET }}
+            run: |
+              MONGODB_ROOT_USERNAME=${MONGODB_USER}
+              MONGODB_ROOT_PASSWORD=${MONGODB_PASS}
+              MONGODB_URI="mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@zlschat-mongo.zlschat.local:27017/zlschat?authSource=admin"
+              RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+              RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+              RABBITMQ_URI="amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@zlschat-rabbitmq.zlschat.local:5672/zlschat"
+              REDIS_URI="redis://${{secrets.REDIS_USER}}:${{secrets.REDIS_PASS}}zlschat-redis.zlschat.local@:6379/0"
+              JWT_SECRET=${JWT_SECRET}
+
+              aws secretsmanager create-secret --name mongodb_uri --description "Mongo URI" --secret-string "${MONGODB_URI}" || aws secretsmanager put-secret-value --secret-id mongodb_uri --secret-string "${MONGODB_URI}"
+              aws secretsmanager create-secret --name rabbitmq_uri --description "RabbitMQ URI" --secret-string "${RABBITMQ_URI}" || aws secretsmanager put-secret-value --secret-id rabbitmq_uri --secret-string "${RABBITMQ_URI}"
+              aws secretsmanager create-secret --name redis_uri --description "Redis URI" --secret-string "${REDIS_URI}" || aws secretsmanager put-secret-value --secret-id redis_uri --secret-string "${REDIS_URI}"
+              aws secretsmanager create-secret --name jwt_secret --description "JWT Secret" --secret-string "${JWT_SECRET}" || aws secretsmanager put-secret-value --secret-id jwt_secret --secret-string "${JWT_SECRET}"
+
+          - name: Force ECS to deploy new image
+            run: |
+              aws ecs update-service --cluster zlschat-cluster --service zlschat_api_service --force-new-deployment
+              aws ecs update-service --cluster zlschat-cluster --service zlschat-redis-service --force-new-deployment
+              aws ecs update-service --cluster zlschat-cluster --service zlschat-mongo-service --force-new-deployment
+              aws ecs update-service --cluster zlschat-cluster --service zlschat-rabbitmq-service --force-new-deployment
