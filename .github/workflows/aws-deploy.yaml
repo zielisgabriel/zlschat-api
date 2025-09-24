@@ -87,11 +87,3 @@ jobs:
               aws secretsmanager put-secret-value \
                 --secret-id zlschat/jwt_secret \
                 --secret-string "${JWT_SECRET}"
-
-
-          - name: Force ECS to deploy new image
-            run: |
-              aws ecs update-service --cluster zlschat-cluster --service zlschat_api_service --force-new-deployment
-              aws ecs update-service --cluster zlschat-cluster --service zlschat-redis-service --force-new-deployment
-              aws ecs update-service --cluster zlschat-cluster --service zlschat-mongo-service --force-new-deployment
-              aws ecs update-service --cluster zlschat-cluster --service zlschat-rabbitmq-service --force-new-deployment
