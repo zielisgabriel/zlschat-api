@@ -26,16 +26,26 @@ jobs:
             id: login-ecr
             uses: aws-actions/amazon-ecr-login@v2
 
-          - name: Build, tag, and push docker image to Amazon ECR
+          - name: Build and Push zlschat-api
             env:
-                IMAGE_TAG: ${{ github.sha }}
+              ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              ECR_REPOSITORY: zlschat-api-repo
+              IMAGE_TAG: latest
             run: |
-                docker build -t zlschat-api:$IMAGE_TAG .
-                docker build -t zlschat-api:latest .
-                docker build -t zlschat-redis:latest ./redis
-                docker push zlschat-api:$IMAGE_TAG
-                docker push zlschat-api:latest
-                docker push zlschat-redis:latest
+              docker build -t $ECR_REPOSITORY:$IMAGE_TAG ./api
+              docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+              docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+          - name: Build and Push zlschat-redis
+            env:
+              ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              ECR_REPOSITORY: zlschat-redis-repo
+              IMAGE_TAG: latest
+            run: |
+              docker build -t $ECR_REPOSITORY:$IMAGE_TAG ./redis
+              docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+              docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
           - name: Put secrets to AWS Secrets Manager (create or update)
             env:
               MONGODB_USER: ${{ secrets.MONGODB_ROOT_USERNAME }}
